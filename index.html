@@ -1,0 +1,1092 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Vòng quay Lì Xì — Full Option</title>
+  <style>
+    :root{
+      --bg1:#12010f;
+      --bg2:#2a0321;
+      --gold:#ffd56a;
+      --red1:#ff2d2d;
+      --red2:#c3001a;
+      --ink:#111;
+      --card:#ffffffde;
+      --shadow: 0 12px 30px rgba(0,0,0,.35);
+      --size: min(82vw, 380px);
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      color:#fff;
+      min-height:100vh;
+      background:
+        radial-gradient(1200px 900px at 20% 10%, rgba(255,214,106,.22), transparent 55%),
+        radial-gradient(900px 700px at 85% 20%, rgba(255,45,45,.20), transparent 55%),
+        linear-gradient(160deg, var(--bg1), var(--bg2));
+      overflow-x:hidden;
+    }
+    .app{
+      width:min(980px, 94vw);
+      margin:0 auto;
+      padding:16px 0 28px;
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:14px;
+    }
+    header{
+      padding:14px 14px 8px;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .brand{
+      display:flex; flex-direction:column; gap:6px;
+    }
+    .brand .title{
+      font-weight:950;
+      letter-spacing:.2px;
+      font-size: clamp(18px, 4.4vw, 26px);
+      line-height:1.1;
+    }
+    .brand .sub{
+      opacity:.85;
+      font-size:13px;
+      line-height:1.35;
+    }
+    .toggles{
+      display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;
+    }
+    .pill{
+      display:flex; align-items:center; gap:8px;
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.16);
+      padding:8px 10px;
+      border-radius:999px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 10px 22px rgba(0,0,0,.15);
+      user-select:none;
+      font-size:13px;
+      cursor:pointer;
+    }
+    .pill input{ accent-color: var(--gold); }
+
+    .main{
+      display:grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap:14px;
+      align-items:start;
+      padding:0 14px;
+    }
+    @media (max-width: 860px){
+      .main{ grid-template-columns: 1fr; }
+      .toggles{ justify-content:flex-start; }
+    }
+
+    .panel{
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius:18px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      overflow:hidden;
+    }
+    .panel .hd{
+      padding:12px 14px;
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      border-bottom:1px solid rgba(255,255,255,.10);
+    }
+    .panel .hd .h{
+      font-weight:900;
+      letter-spacing:.2px;
+    }
+    .panel .bd{ padding:14px; }
+
+    /* ===== Wheel ===== */
+    .wheel-area{
+      display:grid;
+      place-items:center;
+      padding:10px 10px 18px;
+      position:relative;
+    }
+    .wheel-wrap{
+      position:relative;
+      width:var(--size); height:var(--size);
+      display:grid; place-items:center;
+      margin:6px 0 14px;
+    }
+    .pointer{
+      position:absolute;
+      top:-8px; left:50%;
+      transform: translateX(-50%);
+      width:0; height:0;
+      border-left:14px solid transparent;
+      border-right:14px solid transparent;
+      border-bottom:24px solid #000;
+      z-index:10;
+      filter: drop-shadow(0 4px 2px rgba(0,0,0,.35));
+    }
+    .disk{
+      width:100%; height:100%;
+      border-radius:50%;
+      border:10px solid rgba(0,0,0,.9);
+      box-shadow: 0 20px 55px rgba(0,0,0,.35);
+      position:relative;
+      overflow:hidden;
+      transform: rotate(0deg);
+      transition: transform 4.8s cubic-bezier(.10,.86,.12,1);
+      background:
+        radial-gradient(circle at 50% 50%, rgba(255,255,255,.95) 0 24%, transparent 25%),
+        radial-gradient(circle at 50% 50%, rgba(0,0,0,.95) 0 6%, transparent 7%),
+        conic-gradient(from -90deg,
+          #ff3b30 0 12.5%,
+          #ffd56a 12.5% 25%,
+          #2ecc71 25% 37.5%,
+          #4aa3ff 37.5% 50%,
+          #9b59b6 50% 62.5%,
+          #ff8c2a 62.5% 75%,
+          #1abc9c 75% 87.5%,
+          #ff4fb8 87.5% 100%
+        );
+    }
+    .labels{
+      position:absolute; inset:0;
+      pointer-events:none;
+    }
+    .label{
+      position:absolute; left:50%; top:50%;
+      transform-origin:0 0;
+      width:48%;
+      display:flex; align-items:center; justify-content:flex-start;
+      gap:10px;
+      color:#111;
+      font-weight:900;
+      text-shadow: 0 1px 0 rgba(255,255,255,.55);
+    }
+    .packet-mini{
+      width:34px; height:44px;
+      border-radius:10px;
+      background: linear-gradient(var(--red1), var(--red2));
+      border:2px solid rgba(0,0,0,.22);
+      box-shadow: 0 6px 14px rgba(0,0,0,.18);
+      position:relative;
+      display:grid; place-items:center;
+    }
+    .packet-mini:before{
+      content:"";
+      position:absolute;
+      top:10px; left:0; right:0;
+      height:6px;
+      background: rgba(255,213,106,.92);
+    }
+    .packet-mini span{
+      color: rgba(255,213,106,.95);
+      font-size:14px;
+      transform: translateY(6px);
+    }
+    .label small{
+      font-size:12px; font-weight:800;
+      background: rgba(255,255,255,.42);
+      padding:4px 8px;
+      border-radius:999px;
+      border:1px solid rgba(0,0,0,.10);
+    }
+
+    .controls{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:center;
+      width:100%;
+    }
+    button{
+      border:0;
+      border-radius:14px;
+      padding:12px 14px;
+      font-weight:950;
+      cursor:pointer;
+      background:#000;
+      color:#fff;
+      box-shadow: 0 14px 28px rgba(0,0,0,.35);
+      letter-spacing:.2px;
+    }
+    button.secondary{
+      background: rgba(255,255,255,.14);
+      border: 1px solid rgba(255,255,255,.18);
+      backdrop-filter: blur(10px);
+    }
+    button:disabled{ opacity:.55; cursor:not-allowed; }
+
+    /* ===== Result + Lixi opening ===== */
+    .result-card{
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius:18px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      overflow:hidden;
+    }
+    .result-card .hd{
+      padding:12px 14px;
+      border-bottom:1px solid rgba(255,255,255,.10);
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+    }
+    .badge{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 10px;
+      border-radius:999px;
+      background: rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.16);
+      font-size:13px;
+      white-space:nowrap;
+    }
+    .result-card .bd{
+      padding:14px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .muted{ opacity:.85; font-size:13px; line-height:1.35; }
+
+    .lixi-stage{
+      display:grid;
+      place-items:center;
+      padding:8px 0 2px;
+    }
+
+    /* 3D packet */
+    .packet3d{
+      width: 210px;
+      max-width: 78vw;
+      height: 260px;
+      perspective: 1200px;
+      position: relative;
+      user-select:none;
+    }
+    .packet3d .card{
+      width:100%; height:100%;
+      position:absolute; inset:0;
+      transform-style: preserve-3d;
+      transition: transform .9s cubic-bezier(.2,.9,.2,1);
+    }
+    .packet3d.open .card{ transform: rotateY(180deg); }
+
+    .face{
+      position:absolute; inset:0;
+      backface-visibility:hidden;
+      border-radius:18px;
+      overflow:hidden;
+      box-shadow: 0 20px 40px rgba(0,0,0,.35);
+      border: 2px solid rgba(255,213,106,.55);
+    }
+    .front{
+      background: linear-gradient(160deg, var(--red1), var(--red2));
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+      gap:10px;
+    }
+    .front .seal{
+      width: 92px; height: 26px;
+      border-radius:999px;
+      background: linear-gradient(180deg, rgba(255,213,106,1), rgba(255,196,74,1));
+      box-shadow: 0 10px 18px rgba(0,0,0,.25);
+      display:grid; place-items:center;
+      font-weight:950; color:#5a2a00;
+      letter-spacing:.5px;
+      position:absolute;
+      top: 22px;
+    }
+    .front .big{
+      font-size:48px;
+      font-weight:1000;
+      color: rgba(255,213,106,.98);
+      text-shadow: 0 6px 0 rgba(0,0,0,.18);
+      line-height:1;
+    }
+    .front .tap{
+      font-size:13px;
+      opacity:.92;
+      background: rgba(255,255,255,.16);
+      border:1px solid rgba(255,255,255,.22);
+      padding:8px 10px;
+      border-radius:999px;
+    }
+    .front .hint{
+      font-size:12px;
+      opacity:.8;
+      margin-top:4px;
+    }
+
+    .back{
+      transform: rotateY(180deg);
+      background: linear-gradient(135deg, rgba(255,255,255,.95), rgba(255,247,204,.95));
+      color:#111;
+      padding:16px 16px;
+      display:flex; flex-direction:column; justify-content:center; align-items:center;
+      gap:10px;
+    }
+    .prize-text{
+      font-weight:1000;
+      font-size: 18px;
+      text-align:center;
+      line-height:1.25;
+    }
+    .prize-sub{
+      opacity:.8;
+      font-weight:800;
+      font-size:12px;
+      text-align:center;
+    }
+
+    /* falling seal */
+    .seal-drop{
+      position:absolute;
+      left:50%; top:34px;
+      transform: translateX(-50%);
+      width: 98px; height: 28px;
+      border-radius:999px;
+      background: linear-gradient(180deg, rgba(255,213,106,1), rgba(255,196,74,1));
+      box-shadow: 0 10px 18px rgba(0,0,0,.25);
+      display:grid; place-items:center;
+      font-weight:1000; color:#5a2a00;
+      letter-spacing:.5px;
+      opacity:0;
+      z-index: 2;
+    }
+    .packet3d.open .seal-drop{
+      animation: drop .8s ease-out .15s both;
+    }
+    @keyframes drop{
+      0%{ opacity:1; transform: translateX(-50%) translateY(0) rotate(0deg); }
+      100%{ opacity:0; transform: translateX(-50%) translateY(120px) rotate(18deg); }
+    }
+
+    /* fireworks canvas */
+    canvas#fx{
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      z-index: 999;
+      opacity: 0;
+      transition: opacity .25s ease;
+    }
+    canvas#fx.on{ opacity: 1; }
+
+    /* ===== Right panel: odds & history ===== */
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:12px;
+    }
+    .stat-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:10px 12px;
+      border-radius:14px;
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.14);
+    }
+    .stat-row b{ font-weight:950; }
+    .stat-row span{ opacity:.9; font-size:13px; }
+
+    table{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      overflow:hidden;
+      border-radius:14px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+    }
+    th, td{
+      padding:10px 10px;
+      font-size:13px;
+      border-bottom:1px solid rgba(255,255,255,.10);
+      vertical-align:top;
+    }
+    th{
+      text-align:left;
+      font-weight:950;
+      background: rgba(0,0,0,.25);
+    }
+    tr:last-child td{ border-bottom:none; }
+    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:12px; opacity:.9; }
+
+    .row-actions{
+      display:flex; gap:10px; flex-wrap:wrap;
+    }
+
+    .toast{
+      position:fixed;
+      left:50%;
+      bottom:16px;
+      transform: translateX(-50%);
+      padding:10px 12px;
+      border-radius:999px;
+      background: rgba(0,0,0,.72);
+      border: 1px solid rgba(255,255,255,.14);
+      color:#fff;
+      box-shadow: 0 12px 28px rgba(0,0,0,.35);
+      opacity:0;
+      pointer-events:none;
+      transition: opacity .25s ease, transform .25s ease;
+      z-index: 1000;
+      font-size:13px;
+    }
+    .toast.show{
+      opacity:1;
+      transform: translateX(-50%) translateY(-6px);
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="fx"></canvas>
+
+  <div class="app">
+    <header>
+      <div class="brand">
+        <div class="title">🧧 Vòng quay Lì Xì Tết — Full Option</div>
+        <div class="sub">
+          Quay xong mới “mở” bao lì xì để lộ phần thưởng. Có giới hạn lượt quay/ngày + tỉ lệ rõ ràng + lịch sử trúng.
+        </div>
+      </div>
+
+      <div class="toggles">
+        <label class="pill" title="Bật/Tắt pháo hoa khi trúng">
+          <input id="toggleFX" type="checkbox" checked />
+          <span>Pháo hoa</span>
+        </label>
+        <label class="pill" title="Bật/Tắt nhạc nền">
+          <input id="toggleMusic" type="checkbox" />
+          <span>Nhạc</span>
+        </label>
+      </div>
+    </header>
+
+    <div class="main">
+      <!-- LEFT: wheel + open packet -->
+      <section class="panel">
+        <div class="hd">
+          <div class="h">🎡 Vòng quay</div>
+          <div class="badge" id="dailyBadge">Lượt hôm nay: …</div>
+        </div>
+
+        <div class="bd wheel-area">
+          <div class="wheel-wrap">
+            <div class="pointer" aria-hidden="true"></div>
+            <div id="disk" class="disk" aria-label="Vòng quay"></div>
+            <div id="labels" class="labels" aria-hidden="true"></div>
+          </div>
+
+          <div class="controls">
+            <button id="spinBtn">Quay 🎡</button>
+            <button id="openBtn" class="secondary" disabled>Mở lì xì 🧧</button>
+            <button id="resetBtn" class="secondary">Reset</button>
+          </div>
+
+          <div class="result-card" style="width:100%; margin-top:14px;">
+            <div class="hd">
+              <div class="h">Kết quả</div>
+              <div class="badge" id="statusBadge">Chưa quay</div>
+            </div>
+            <div class="bd">
+              <div class="muted" id="statusText">
+                Nhấn <b>Quay</b>. Khi dừng trúng ô nào, bạn mới có thể <b>Mở lì xì</b> để xem phần thưởng.
+              </div>
+
+              <div class="lixi-stage">
+                <div class="packet3d" id="packet3d" title="Nhấn Mở lì xì để lật">
+                  <div class="seal-drop">福</div>
+                  <div class="card">
+                    <div class="face front">
+                      <div class="seal">福</div>
+                      <div class="big">🧧</div>
+                      <div class="tap">Bao lì xì đang đóng</div>
+                      <div class="hint" id="slotHint">—</div>
+                    </div>
+                    <div class="face back">
+                      <div class="prize-text" id="prizeText">—</div>
+                      <div class="prize-sub" id="prizeSub">—</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="muted mono" id="debugLine" style="display:none;"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT: odds + history -->
+      <aside class="panel">
+        <div class="hd">
+          <div class="h">📊 Tỉ lệ & Lịch sử</div>
+          <div class="row-actions">
+            <button id="exportBtn" class="secondary">Export log</button>
+            <button id="clearLogBtn" class="secondary">Xóa log</button>
+          </div>
+        </div>
+
+        <div class="bd grid">
+          <div class="stat-row">
+            <b>Giới hạn lượt/ngày</b>
+            <span id="limitText">…</span>
+          </div>
+          <div class="stat-row">
+            <b>Đã quay hôm nay</b>
+            <span id="usedText">…</span>
+          </div>
+
+          <div style="opacity:.92; font-weight:950;">Tỉ lệ trúng (theo %)</div>
+          <table id="oddsTable" aria-label="Bảng tỉ lệ">
+            <thead>
+              <tr><th>Ô</th><th>Phần thưởng</th><th>%</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+
+          <div style="opacity:.92; font-weight:950; margin-top:2px;">Lịch sử trúng (mới nhất trước)</div>
+          <table id="logTable" aria-label="Bảng lịch sử">
+            <thead>
+              <tr><th>Thời gian</th><th>Ô</th><th>Phần thưởng</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+
+          <div class="muted">
+            Tip: muốn chỉnh phần thưởng/%, sửa biến <span class="mono">PRIZES</span> trong code.
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+/** ================== CONFIG ==================
+ *  - label: tên ô
+ *  - content: nội dung giải thưởng (chỉ hiện sau khi mở lì xì)
+ *  - weight: trọng số (dùng để tính %)
+ *  - note: mô tả ngắn (tuỳ chọn)
+ */
+const DAILY_LIMIT = 8; // (2) giới hạn lượt quay/ngày
+const PRIZES = [
+  { label: "Bao 1", content: "10 TWD 🪙", weight: 26, note:"nhỏ mà vui" },
+  { label: "Bao 2", content: "20 TWD 🪙", weight: 20, note:"ổn áp" },
+  { label: "Bao 3", content: "50 TWD 🪙", weight: 12, note:"ngon" },
+  { label: "Bao 4", content: "100 TWD 🧧", weight: 6, note:"hơi hiếm" },
+  { label: "Bao 5", content: "Chúc may mắn 🍀", weight: 16, note:"tâm linh" },
+  { label: "Bao 6", content: "Trà sữa free 🧋", weight: 5, note:"đỉnh" },
+  { label: "Bao 7", content: "Lì xì bí mật 🤫", weight: 10, note:"bí ẩn" },
+  { label: "Bao 8", content: "Không trúng 😆", weight: 5, note:"xui nhẹ" },
+];
+// =====================================================
+
+/** ================== STATE + STORAGE ================== */
+const LS_KEY = "lixi_wheel_v1";
+function todayKey(){
+  // theo local time thiết bị
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,"0");
+  const day = String(d.getDate()).padStart(2,"0");
+  return `${y}-${m}-${day}`;
+}
+function loadState(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(!raw) return { day: todayKey(), used:0, log:[] };
+    const s = JSON.parse(raw);
+    // reset nếu khác ngày
+    if(s.day !== todayKey()){
+      return { day: todayKey(), used:0, log: (Array.isArray(s.log)? s.log : []) };
+    }
+    return {
+      day: s.day,
+      used: Number.isFinite(s.used) ? s.used : 0,
+      log: Array.isArray(s.log) ? s.log : []
+    };
+  }catch{
+    return { day: todayKey(), used:0, log:[] };
+  }
+}
+function saveState(){
+  localStorage.setItem(LS_KEY, JSON.stringify(state));
+}
+let state = loadState();
+
+/** ================== DOM ================== */
+const disk = document.getElementById("disk");
+const labels = document.getElementById("labels");
+const spinBtn = document.getElementById("spinBtn");
+const openBtn = document.getElementById("openBtn");
+const resetBtn = document.getElementById("resetBtn");
+const exportBtn = document.getElementById("exportBtn");
+const clearLogBtn = document.getElementById("clearLogBtn");
+
+const statusBadge = document.getElementById("statusBadge");
+const statusText = document.getElementById("statusText");
+const dailyBadge = document.getElementById("dailyBadge");
+const limitText = document.getElementById("limitText");
+const usedText = document.getElementById("usedText");
+
+const packet3d = document.getElementById("packet3d");
+const slotHint = document.getElementById("slotHint");
+const prizeText = document.getElementById("prizeText");
+const prizeSub = document.getElementById("prizeSub");
+
+const oddsTableBody = document.querySelector("#oddsTable tbody");
+const logTableBody = document.querySelector("#logTable tbody");
+
+const toastEl = document.getElementById("toast");
+
+const toggleFX = document.getElementById("toggleFX");
+const toggleMusic = document.getElementById("toggleMusic");
+
+/** ================== MUSIC (4) ==================
+ *  Nhạc bằng WebAudio oscillator (khỏi cần file mp3).
+ *  Lưu ý: iOS cần người dùng tương tác => bật nhạc khi tick sau 1 click.
+ */
+let audioCtx = null;
+let musicNode = null;
+let musicOn = false;
+
+function ensureAudio(){
+  if(audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+}
+function startMusic(){
+  ensureAudio();
+  if(musicNode) return;
+
+  const gain = audioCtx.createGain();
+  gain.gain.value = 0.03;
+
+  // 2 oscillator cho “nhạc nền” nhẹ
+  const o1 = audioCtx.createOscillator();
+  const o2 = audioCtx.createOscillator();
+  o1.type = "sine";
+  o2.type = "triangle";
+  o1.frequency.value = 220;
+  o2.frequency.value = 330;
+
+  // LFO rung nhẹ
+  const lfo = audioCtx.createOscillator();
+  const lfoGain = audioCtx.createGain();
+  lfo.type = "sine";
+  lfo.frequency.value = 0.25;
+  lfoGain.gain.value = 20;
+  lfo.connect(lfoGain);
+  lfoGain.connect(o2.frequency);
+
+  o1.connect(gain);
+  o2.connect(gain);
+  gain.connect(audioCtx.destination);
+
+  o1.start(); o2.start(); lfo.start();
+  musicNode = { gain, o1, o2, lfo };
+
+  musicOn = true;
+}
+function stopMusic(){
+  if(!musicNode) return;
+  try{
+    musicNode.o1.stop();
+    musicNode.o2.stop();
+    musicNode.lfo.stop();
+  }catch{}
+  musicNode = null;
+  musicOn = false;
+}
+
+/** ================== UTIL ================== */
+const N = PRIZES.length;
+const SEG = 360 / N;
+
+let spinning = false;
+let currentRotation = 0;
+let selectedIndex = null;
+let readyToOpen = false;
+
+function toast(msg){
+  toastEl.textContent = msg;
+  toastEl.classList.add("show");
+  setTimeout(()=> toastEl.classList.remove("show"), 1600);
+}
+
+function totalWeight(){
+  return PRIZES.reduce((s,p)=> s + (p.weight ?? 1), 0);
+}
+function oddsPct(){
+  const total = totalWeight();
+  return PRIZES.map(p => ({
+    ...p,
+    pct: total > 0 ? (100 * (p.weight ?? 1) / total) : 0
+  }));
+}
+function weightedPickIndex(items){
+  const total = items.reduce((s, it) => s + (it.weight ?? 1), 0);
+  let r = Math.random() * total;
+  for (let i=0;i<items.length;i++){
+    r -= (items[i].weight ?? 1);
+    if (r <= 0) return i;
+  }
+  return items.length - 1;
+}
+function nowStamp(){
+  const d = new Date();
+  const pad = n => String(n).padStart(2,"0");
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
+
+/** ================== BUILD UI ================== */
+function buildWheelLabels(){
+  labels.innerHTML = "";
+  for(let i=0;i<N;i++){
+    const angle = -90 + (i * SEG) + SEG/2;
+    const el = document.createElement("div");
+    el.className = "label";
+    el.style.transform = `rotate(${angle}deg) translate(16px, -10px)`;
+    el.innerHTML = `
+      <div class="packet-mini"><span>福</span></div>
+      <small>${PRIZES[i].label}</small>
+    `;
+    labels.appendChild(el);
+  }
+}
+function buildOddsTable(){
+  const rows = oddsPct().map(p => `
+    <tr>
+      <td><b>${escapeHtml(p.label)}</b></td>
+      <td>${escapeHtml(p.content)}</td>
+      <td><b>${p.pct.toFixed(1)}%</b></td>
+    </tr>
+  `).join("");
+  oddsTableBody.innerHTML = rows;
+}
+function buildLogTable(){
+  const log = state.log.slice(0, 20); // show top 20
+  if(log.length === 0){
+    logTableBody.innerHTML = `<tr><td colspan="3" class="muted">Chưa có lịch sử.</td></tr>`;
+    return;
+  }
+  logTableBody.innerHTML = log.map(item => `
+    <tr>
+      <td class="mono">${escapeHtml(item.time)}</td>
+      <td><b>${escapeHtml(item.label)}</b></td>
+      <td>${escapeHtml(item.content)}</td>
+    </tr>
+  `).join("");
+}
+function refreshDailyUI(){
+  // reset nếu sang ngày mới
+  if(state.day !== todayKey()){
+    state = { day: todayKey(), used:0, log: state.log || [] };
+    saveState();
+  }
+  dailyBadge.textContent = `Hôm nay: ${state.used}/${DAILY_LIMIT} lượt`;
+  limitText.textContent = `${DAILY_LIMIT} lượt/ngày (reset theo ngày)`;
+  usedText.textContent = `${state.used} lượt`;
+  // disable spin if limit reached
+  if(state.used >= DAILY_LIMIT && !spinning){
+    spinBtn.disabled = true;
+    statusBadge.textContent = "Hết lượt hôm nay";
+    statusText.innerHTML = `Bạn đã dùng hết <b>${DAILY_LIMIT}</b> lượt hôm nay. Mai quay tiếp nhé 🧧`;
+  }else if(!spinning && !readyToOpen){
+    spinBtn.disabled = false;
+  }
+}
+function resetPacket(){
+  packet3d.classList.remove("open");
+  slotHint.textContent = "—";
+  prizeText.textContent = "—";
+  prizeSub.textContent = "—";
+  openBtn.disabled = true;
+  readyToOpen = false;
+}
+function resetAll(){
+  spinning = false;
+  selectedIndex = null;
+  readyToOpen = false;
+  resetPacket();
+  statusBadge.textContent = "Chưa quay";
+  statusText.innerHTML = `Nhấn <b>Quay</b>. Khi dừng trúng ô nào, bạn mới có thể <b>Mở lì xì</b> để xem phần thưởng.`;
+  refreshDailyUI();
+}
+
+function escapeHtml(s){
+  return String(s)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+buildWheelLabels();
+buildOddsTable();
+buildLogTable();
+refreshDailyUI();
+
+/** ================== FIREWORKS (4) ================== */
+const fxCanvas = document.getElementById("fx");
+const fxCtx = fxCanvas.getContext("2d");
+let fxOn = false;
+let particles = [];
+let fxTimer = null;
+
+function resizeFx(){
+  fxCanvas.width = window.innerWidth * devicePixelRatio;
+  fxCanvas.height = window.innerHeight * devicePixelRatio;
+  fxCtx.scale(devicePixelRatio, devicePixelRatio);
+}
+function spawnFirework(x, y){
+  const count = 80 + Math.floor(Math.random()*40);
+  for(let i=0;i<count;i++){
+    const a = Math.random()*Math.PI*2;
+    const sp = 2 + Math.random()*4.5;
+    particles.push({
+      x, y,
+      vx: Math.cos(a)*sp,
+      vy: Math.sin(a)*sp,
+      life: 60 + Math.random()*30,
+      r: 1.2 + Math.random()*2.2,
+      hue: Math.random()*360
+    });
+  }
+}
+function startFx(){
+  if(fxOn) return;
+  fxOn = true;
+  fxCanvas.classList.add("on");
+  // ensure size
+  fxCanvas.width = window.innerWidth;
+  fxCanvas.height = window.innerHeight;
+  particles = [];
+  let frame = 0;
+
+  const loop = () => {
+    if(!fxOn) return;
+    frame++;
+    fxCtx.clearRect(0,0,fxCanvas.width, fxCanvas.height);
+
+    // fade background a little for trails
+    fxCtx.fillStyle = "rgba(0,0,0,0.12)";
+    fxCtx.fillRect(0,0,fxCanvas.width, fxCanvas.height);
+
+    particles.forEach(p=>{
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += 0.04;
+      p.vx *= 0.99;
+      p.vy *= 0.99;
+      p.life--;
+
+      fxCtx.beginPath();
+      fxCtx.fillStyle = `hsla(${p.hue}, 100%, 65%, ${Math.max(0,p.life/80)})`;
+      fxCtx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+      fxCtx.fill();
+    });
+    particles = particles.filter(p=>p.life>0);
+
+    fxTimer = requestAnimationFrame(loop);
+  };
+  fxTimer = requestAnimationFrame(loop);
+}
+function stopFx(){
+  fxOn = false;
+  fxCanvas.classList.remove("on");
+  if(fxTimer) cancelAnimationFrame(fxTimer);
+  fxTimer = null;
+  particles = [];
+  fxCtx.clearRect(0,0,fxCanvas.width, fxCanvas.height);
+}
+
+/** ================== SPIN LOGIC ================== */
+function canSpin(){
+  refreshDailyUI();
+  return state.used < DAILY_LIMIT;
+}
+
+spinBtn.addEventListener("click", async () => {
+  if(spinning) return;
+
+  // iOS: resume audio context on user interaction
+  if(toggleMusic.checked){
+    ensureAudio();
+    try{ await audioCtx.resume(); }catch{}
+    if(!musicOn) startMusic();
+  }else{
+    stopMusic();
+  }
+
+  if(!canSpin()){
+    toast("Hết lượt hôm nay rồi 😆");
+    return;
+  }
+
+  // reset packet closed before spinning
+  resetPacket();
+  packet3d.classList.remove("open");
+
+  spinning = true;
+  spinBtn.disabled = true;
+  openBtn.disabled = true;
+  resetBtn.disabled = true;
+
+  statusBadge.textContent = "Đang quay…";
+  statusText.textContent = "Đang quay… phần thưởng sẽ chỉ lộ ra sau khi bạn mở lì xì 🧧";
+
+  // pick index by weight
+  const index = weightedPickIndex(PRIZES);
+  selectedIndex = index;
+
+  // rotate so that selected segment's center hits pointer at top
+  const centerAngle = index * SEG + SEG/2;
+  const extraSpins = 6 + Math.floor(Math.random()*3); // 6-8 vòng
+  const target = currentRotation + extraSpins*360 + (360 - centerAngle);
+  currentRotation = target;
+
+  disk.style.transform = `rotate(${target}deg)`;
+
+  disk.addEventListener("transitionend", () => {
+    spinning = false;
+    resetBtn.disabled = false;
+
+    // (2) count daily usage NOW (spin finished)
+    state.used += 1;
+    saveState();
+    refreshDailyUI();
+
+    // Ready to open (1)
+    readyToOpen = true;
+    openBtn.disabled = false;
+
+    const slot = PRIZES[index];
+    slotHint.textContent = `Trúng ô: ${slot.label} — nhấn “Mở lì xì”`;
+    statusBadge.textContent = "Dừng rồi!";
+    statusText.innerHTML = `Dính <b>${slot.label}</b>. Giờ mới được <b>Mở lì xì</b> để xem phần thưởng.`;
+
+    // allow next spin only after open (feel like real lixi)
+    spinBtn.disabled = true;
+    toast("Dừng rồi — mở lì xì đi 🧧");
+  }, { once:true });
+
+}, { passive:true });
+
+openBtn.addEventListener("click", () => {
+  if(!readyToOpen || selectedIndex === null) return;
+
+  const slot = PRIZES[selectedIndex];
+
+  // reveal content (1)
+  prizeText.textContent = `🎉 ${slot.content}`;
+  prizeSub.textContent = slot.note ? `(${slot.note})` : "Chúc mừng năm mới!";
+  packet3d.classList.add("open");
+
+  readyToOpen = false;
+  openBtn.disabled = true;
+
+  // (3) log result
+  const item = { time: nowStamp(), label: slot.label, content: slot.content };
+  state.log.unshift(item);
+  // cap log length
+  if(state.log.length > 200) state.log.length = 200;
+  saveState();
+  buildLogTable();
+
+  // (4) fireworks if enabled and "good prize" (you can change this rule)
+  const isWin = !String(slot.content).toLowerCase().includes("không trúng");
+  if(toggleFX.checked && isWin){
+    // canvas size / basic spawn
+    fxCanvas.width = window.innerWidth;
+    fxCanvas.height = window.innerHeight;
+    startFx();
+    // burst near center top
+    for(let i=0;i<3;i++){
+      setTimeout(()=>{
+        spawnFirework(
+          window.innerWidth*(0.25 + Math.random()*0.5),
+          window.innerHeight*(0.18 + Math.random()*0.25)
+        );
+      }, i*180);
+    }
+    setTimeout(stopFx, 1500);
+  }
+
+  statusBadge.textContent = "Đã mở";
+  statusText.innerHTML = `Bạn đã mở <b>${slot.label}</b>. Muốn quay tiếp thì bấm <b>Quay</b> (nếu còn lượt).`;
+
+  // enable spin again if still has daily spins
+  refreshDailyUI();
+  if(state.used < DAILY_LIMIT){
+    spinBtn.disabled = false;
+  }else{
+    spinBtn.disabled = true;
+  }
+
+  toast("Mở lì xì rồi! 🧧");
+}, { passive:true });
+
+resetBtn.addEventListener("click", async () => {
+  if(spinning) return;
+  resetAll();
+  toast("Đã reset giao diện");
+}, { passive:true });
+
+exportBtn.addEventListener("click", () => {
+  const data = {
+    day: state.day,
+    daily_limit: DAILY_LIMIT,
+    used_today: state.used,
+    prizes: oddsPct().map(p=>({ label:p.label, content:p.content, pct:+p.pct.toFixed(2) })),
+    log: state.log
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type:"application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `lixi_log_${todayKey()}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  toast("Đã export log");
+}, { passive:true });
+
+clearLogBtn.addEventListener("click", () => {
+  state.log = [];
+  saveState();
+  buildLogTable();
+  toast("Đã xóa log");
+}, { passive:true });
+
+toggleMusic.addEventListener("change", async () => {
+  if(toggleMusic.checked){
+    ensureAudio();
+    try{ await audioCtx.resume(); }catch{}
+    startMusic();
+    toast("Bật nhạc 🎶");
+  }else{
+    stopMusic();
+    toast("Tắt nhạc");
+  }
+}, { passive:true });
+
+toggleFX.addEventListener("change", () => {
+  toast(toggleFX.checked ? "Bật pháo hoa 🎆" : "Tắt pháo hoa");
+}, { passive:true });
+
+// First paint
+resetAll();
+</script>
+</body>
+</html>
